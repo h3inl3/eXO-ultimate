@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Play editor, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5FA5}a:hover{color:#083F6E}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, system-ui, sans-serif; overflow: hidden">
+
+<header style="padding: 56px 20px 12px; display: flex; align-items: center; gap: 10px">
+<a href="MobileHome.dc.html" aria-label="Back to playbook" style="width: 48px; height: 48px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+</a>
+<div style="flex: 1; min-width: 0">
+<div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Ho stack · break side</div>
+<div style="display: flex; gap: 6px; margin-top: 4px">
+<span style="padding: 2px 8px; border-radius: 999px; background: {{t.chipBlue}}; font-size: 12px; font-weight: 700">Offense</span>
+<span style="padding: 2px 8px; border-radius: 999px; background: {{t.surface2}}; font-size: 12px; font-weight: 600">Saved · v3</span>
+</div>
+</div>
+<button style="height: 48px; padding: 0 16px; border: 0; border-radius: 14px; background: {{t.blue}}; color: {{t.onBlue}}; font: 600 15px Inter, sans-serif">Save</button>
+</header>
+
+<section aria-label="Field diagram" style="margin: 4px 20px 0; position: relative; height: 430px; border-radius: 18px; background: {{t.field}}; overflow: hidden">
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 86px; background: {{t.endzone}}; border-bottom: 2px solid rgba(255,255,255,0.7)"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: {{t.endzone}}; border-top: 2px solid rgba(255,255,255,0.7)"></div>
+<span style="position: absolute; top: 34px; width: 100%; text-align: center; color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 700; letter-spacing: 3px">ATTACKING ENDZONE</span>
+<svg width="350" height="430" viewBox="0 0 350 430" style="position: absolute; inset: 0" aria-hidden="true">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FFFFFF"></path></marker>
+<marker id="ao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FF8A2A"></path></marker></defs>
+<path d="M245 170 C 270 140, 285 120, 290 96" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" marker-end="url(#ah)"></path>
+<path d="M105 170 C 90 200, 80 220, 70 240" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" marker-end="url(#ah)"></path>
+<path d="M175 300 Q 260 230 290 110" fill="none" stroke="#FF8A2A" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round" marker-end="url(#ao)"></path>
+</svg>
+<sc-for list="{{tokens}}" as="k" hint-placeholder-count="10">
+<div style="position: absolute; left: {{k.left}}; top: {{k.top}}; width: 40px; height: 40px; border-radius: 50%; background: {{k.bg}}; color: {{k.fg}}; border: {{k.border}}; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font: 700 13px 'Space Grotesk', sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.25)">{{k.label}}</div>
+</sc-for>
+<div style="position: absolute; left: 186px; top: 296px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 3px solid #FF8A2A"></div>
+</section>
+
+<section style="padding: 14px 20px 0; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px">
+<button aria-label="Play animation" style="width: 48px; height: 48px; border-radius: 50%; border: 0; background: {{t.orange}}; color: #1A0D00; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg>
+</button>
+<div style="flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{frames}}" as="fr" hint-placeholder-count="4">
+<button onClick="{{ fr.pick }}" style="height: 48px; border-radius: 12px; border: {{fr.border}}; background: {{fr.bg}}; color: {{fr.fg}}; font: 600 14px Inter, sans-serif">{{fr.label}}</button>
+</sc-for>
+</div>
+</div>
+<p style="margin: 0; padding: 12px 14px; border-radius: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 14px; line-height: 1.4">Dump swings, break side opens. Wing cuts deep on the swing.</p>
+</section>
+
+<nav aria-label="Drawing tools" style="margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 10px 16px 30px; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+<sc-for list="{{tools}}" as="tl" hint-placeholder-count="5">
+<button onClick="{{ tl.pick }}" aria-pressed="{{tl.on}}" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; justify-content: center; border: 0; border-radius: 12px; background: {{tl.bg}}; color: {{tl.fg}}; font: 600 12px Inter, sans-serif">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tl.icon}}"></path></svg>
+{{tl.label}}
+</button>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+const THEME = (d) => d ? {
+  bg:'#07141F', surface:'#0F2233', surface2:'#163049', line:'#23415C', text:'#EAF3FA', muted:'#9DB3C6',
+  blue:'#4EA8F2', onBlue:'#04111C', orange:'#FF8A2A', chipBlue:'#123A5C', field:'#0E4A3A', endzone:'#0B3A2E', sel:'#123A5C'
+} : {
+  bg:'#F3F7FB', surface:'#FFFFFF', surface2:'#E8F0F7', line:'#D3E0EB', text:'#0B1F33', muted:'#4A5D70',
+  blue:'#0B5FA5', onBlue:'#FFFFFF', orange:'#F07A1A', chipBlue:'#DCEBF8', field:'#1F8A5B', endzone:'#187349', sel:'#DCEBF8'
+};
+const W = 350, H = 430;
+class Component extends DCLogic {
+  renderVals() {
+    const t = THEME(this.props.dark ?? false);
+    const s = this.state || {};
+    const frame = s.frame ?? 1, tool = s.tool ?? 'Cut';
+    const O = [['H1',0.5,0.70],['H2',0.28,0.40],['H3',0.70,0.40],['C1',0.13,0.62],['C2',0.88,0.62]];
+    const D = [['',0.52,0.64],['',0.30,0.35],['',0.72,0.35]];
+    const pos = (x,y) => ({ left: (x*W - 20) + 'px', top: (y*H - 20) + 'px' });
+    const tokens = [
+      ...O.map(([label,x,y]) => ({ label, ...pos(x,y), bg: '#0B5FA5', fg: '#FFFFFF', border: '2px solid #FFFFFF' })),
+      ...D.map(([label,x,y]) => ({ label: 'D', ...pos(x,y), bg: '#FFFFFF', fg: '#0B1F33', border: '3px solid #FF8A2A' }))
+    ];
+    const frames = [1,2,3,4].map((n) => ({ label: n === 4 ? '+' : 'Step ' + n,
+      bg: n === frame ? t.blue : t.surface, fg: n === frame ? t.onBlue : t.text,
+      border: n === frame ? '0' : '1px solid ' + t.line, pick: () => n < 4 && this.setState({ frame: n }) }));
+    const tools = [['Move','M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20'],
+      ['Cut','M4 20c6 0 8-10 16-16M14 4h6v6'],['Throw','M4 18c4-10 12-12 16-8M16 6l4 4-4 4'],
+      ['Player','M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M4 21v-1a6 6 0 0 1 12 0M19 8v6M16 11h6'],['Erase','M5 15l8-8 6 6-6 6H9zM13 21h8']]
+      .map(([label,icon]) => ({ label, icon, on: label === tool ? 'true' : 'false',
+        bg: label === tool ? t.sel : 'transparent', fg: t.text, pick: () => this.setState({ tool: label }) }));
+    return { t, tokens, frames, tools };
+  }
+}
+</script>
+</body>
+</html>

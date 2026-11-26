@@ -1,0 +1,2 @@
+# Design canvas snapshots: keep byte-for-byte so they re-import cleanly
+docs/design/*.dc.html

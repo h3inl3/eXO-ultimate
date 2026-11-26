@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live scoring, mobile landscape</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7CC0F7}a:hover{color:#A9D6FA}
+</style>
+</helmet>
+<div style="width: 844px; height: 390px; box-sizing: border-box; display: flex; flex-direction: column; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, system-ui, sans-serif; overflow: hidden">
+
+<header style="height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px 0 52px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}}">
+<div style="display: flex; align-items: baseline; gap: 10px; font-family: 'Space Grotesk', sans-serif">
+<span style="font-size: 13px; font-weight: 700; color: {{t.muted}}">US</span>
+<span style="font-size: 30px; font-weight: 700">{{us}}</span>
+<span style="font-size: 18px; color: {{t.muted}}">–</span>
+<span style="font-size: 30px; font-weight: 700">{{them}}</span>
+<span style="font-size: 13px; font-weight: 700; color: {{t.muted}}">RIPTIDE</span>
+</div>
+<span style="padding: 6px 12px; border-radius: 999px; background: {{phaseBg}}; color: {{phaseFg}}; font-size: 13px; font-weight: 700">Pt {{point}} · {{phaseLabel}}</span>
+<span style="font-size: 13px; color: {{t.muted}}">4M / 3F · ratio B</span>
+<div style="margin-left: auto; display: flex; gap: 8px">
+<button onClick="{{ timeout }}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid {{t.line}}; background: transparent; color: {{t.text}}; font: 700 14px Inter, sans-serif; display: flex; align-items: center; gap: 6px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16M12 9v4l2 2M10 2h4"></path></svg>Timeout</button>
+<button onClick="{{ undo }}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid {{t.line}}; background: transparent; color: {{t.text}}; font: 700 14px Inter, sans-serif; display: flex; align-items: center; gap: 6px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Undo</button>
+<button aria-label="Game menu" style="width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid {{t.line}}; background: transparent; color: {{t.text}}; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+</button>
+</div>
+</header>
+
+<div style="flex: 1; display: flex; min-height: 0">
+<div style="position: relative; width: 664px; flex: none">
+<sc-for list="{{players}}" as="p" hint-placeholder-count="7">
+<button onClick="{{ p.tap }}" aria-label="{{p.aria}}" style="position: absolute; left: {{p.left}}; top: {{p.top}}; width: 64px; height: 64px; border-radius: 50%; border: {{p.border}}; box-sizing: border-box; background: {{p.bg}}; color: {{p.fg}}; font: 700 16px 'Space Grotesk', sans-serif; display: flex; align-items: center; justify-content: center; box-shadow: {{p.shadow}}">{{p.name}}</button>
+</sc-for>
+<sc-for list="{{radial}}" as="r" hint-placeholder-count="0">
+<button onClick="{{ r.tap }}" aria-label="{{r.label}}" style="position: absolute; left: {{r.left}}; top: {{r.top}}; width: {{r.size}}; height: {{r.size}}; padding: 0; border: 0; background: transparent; clip-path: {{r.clip}}; z-index: 2; cursor: pointer">
+<svg width="184" height="184" viewBox="0 0 184 184" style="position: absolute; inset: 0" aria-hidden="true"><path d="{{r.d}}" fill="{{r.bg}}" stroke="{{r.stroke}}" stroke-width="3"></path></svg>
+<span style="position: absolute; left: {{r.lx}}; top: {{r.ly}}; width: 72px; text-align: center; color: {{r.fg}}; font: 700 12px Inter, sans-serif; line-height: 1.1">{{r.label}}</span>
+</button>
+</sc-for>
+</div>
+
+<aside style="flex: 1; padding: 12px 16px 12px 0; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{isD}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 13px; color: {{t.muted}}">Tap a player for a D. Disc loose? Tap who picks it up.</p>
+<button onClick="{{ oppTurn }}" style="flex: 1; border: 0; border-radius: 14px; background: {{t.green}}; color: {{t.onGreen}}; font: 700 16px Inter, sans-serif">Opp turnover</button>
+<button onClick="{{ oppScore }}" style="flex: 1; border-radius: 14px; border: 1.5px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; font: 700 16px Inter, sans-serif">Opp scores</button>
+</sc-if>
+<sc-if value="{{isO}}" hint-placeholder-val="{{ true }}">
+<div style="flex: 1; border-radius: 14px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: {{t.muted}}">EVENTS</span>
+<ol aria-label="Event stream, newest first" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden">
+<sc-for list="{{events}}" as="e" hint-placeholder-count="6">
+<li style="font-size: {{e.size}}; font-weight: {{e.weight}}; color: {{e.color}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.text}}</li>
+</sc-for>
+</ol>
+</div>
+</sc-if>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false},&quot;$preview&quot;:{&quot;width&quot;:844,&quot;height&quot;:390}}">
+const THEME = (d) => d ? {
+  bg:'#07141F', surface:'#0F2233', surface2:'#163049', line:'#23415C', text:'#EAF3FA', muted:'#9DB3C6',
+  blue:'#4EA8F2', onBlue:'#04111C', green:'#34C98B', onGreen:'#04150E', orange:'#FF8A2A', chipBlue:'#123A5C', chipGreen:'#0F3B2E', ring:'#163049'
+} : {
+  bg:'#F3F7FB', surface:'#FFFFFF', surface2:'#E8F0F7', line:'#D3E0EB', text:'#0B1F33', muted:'#4A5D70',
+  blue:'#0B5FA5', onBlue:'#FFFFFF', green:'#0B7A55', onGreen:'#FFFFFF', orange:'#F07A1A', chipBlue:'#DCEBF8', chipGreen:'#D9F2E7', ring:'#FFFFFF'
+};
+// Evenly spaced columns, alternating rows, so the 92px ring never covers a neighbour.
+const ROSTER = ['Jo','Kai','Sam','Mei','Alex','Dev','Ria'].map((n,i) => ['p'+(i+1), n, 100 + i*80, i % 2 ? 214 : 96]);
+const RO = 92, RI = 40, GAP = 3;
+const pt = (r,deg) => { const a = deg * Math.PI / 180; return (RO + r*Math.cos(a)).toFixed(1) + ' ' + (RO + r*Math.sin(a)).toFixed(1); };
+const arc = (c) => { const a0 = c - 45 + GAP, a1 = c + 45 - GAP;
+  return 'M' + pt(RO,a0) + ' A' + RO + ' ' + RO + ' 0 0 1 ' + pt(RO,a1) + ' L' + pt(RI,a1) + ' A' + RI + ' ' + RI + ' 0 0 0 ' + pt(RI,a0) + 'Z'; };
+const NAME = Object.fromEntries(ROSTER.map(([id,n]) => [id,n]));
+const START = { phase:'O', holder:'p1', us:7, them:5, point:13, passes:3, log:['Kai → Jo','Mei → Kai','Pull (Dev) IB'], hist:[] };
+class Component extends DCLogic {
+  renderVals() {
+    const t = THEME(this.props.dark ?? true);
+    const s = this.state && this.state.g ? this.state.g : START;
+    const go = (patch, entry) => {
+      const { hist, ...snap } = s;
+      this.setState({ g: { ...s, ...patch, log: entry ? [entry, ...s.log].slice(0, 10) : s.log, hist: [...hist, snap] } });
+    };
+    const undo = () => { if (!s.hist.length) return; const prev = s.hist[s.hist.length - 1]; this.setState({ g: { ...prev, hist: s.hist.slice(0, -1) } }); };
+    const turnover = (what) => go({ phase:'D', holder:null }, what + ' ' + NAME[s.holder]);
+    const players = ROSTER.map(([id,name,x,y]) => {
+      const isHolder = s.phase === 'O' && s.holder === id;
+      const tap = () => {
+        if (s.phase === 'D') return go({ phase:'O', holder:null }, 'D ' + name);
+        if (s.holder === null) return go({ holder:id }, 'Pickup ' + name);
+        if (s.holder !== id) return go({ holder:id, passes: s.passes + 1 }, NAME[s.holder] + ' → ' + name);
+      };
+      return { name, tap, left: (x-32)+'px', top: (y-32)+'px',
+        aria: isHolder ? name + ', has the disc' : s.phase === 'D' ? 'D by ' + name : s.holder ? 'Pass to ' + name : name + ' picks up',
+        bg: isHolder ? t.orange : s.phase === 'D' ? t.surface2 : t.blue,
+        fg: isHolder ? '#1A0D00' : s.phase === 'D' ? t.text : t.onBlue,
+        border: isHolder ? '3px solid ' + t.text : s.phase === 'D' ? '2px solid ' + t.green : '0',
+        shadow: isHolder ? '0 0 0 6px rgba(255,138,42,0.28)' : 'none' };
+    });
+    let radial = [];
+    const h = ROSTER.find(([id]) => id === s.holder);
+    if (s.phase === 'O' && h) {
+      const [, , hx, hy] = h;
+      radial = [
+        ['Throwaway', -90, () => turnover('Throwaway')],
+        ['Goal', 0, () => go({ phase:'D', holder:null, us: s.us + 1, point: s.point + 1, passes:0 }, 'GOAL ' + NAME[s.holder])],
+        ['Drop', 90, () => turnover('Drop')],
+        ['Stall', 180, () => turnover('Stall')]
+      ].map(([label, c, tap]) => {
+        const d = arc(c), goal = label === 'Goal', a = c * Math.PI / 180, m = (RO + RI) / 2;
+        return { label, tap, d, clip: "path('" + d + "')", size: (RO*2)+'px',
+          left: (hx-RO)+'px', top: (hy-RO)+'px',
+          lx: (RO + m*Math.cos(a) - 36).toFixed(1)+'px', ly: (RO + m*Math.sin(a) - 7).toFixed(1)+'px',
+          bg: goal ? t.green : t.ring, fg: goal ? t.onGreen : t.text, stroke: goal ? t.green : t.muted };
+      });
+    }
+    const isO = s.phase === 'O';
+    return { t, players, radial, undo, isO, isD: !isO, timeout: () => go({}, 'Timeout'),
+      us: s.us, them: s.them, point: s.point, passes: s.passes,
+      phaseLabel: isO ? 'OFFENSE' : 'DEFENSE',
+      phaseBg: isO ? t.chipBlue : t.chipGreen, phaseFg: t.text,
+      holderName: s.holder ? NAME[s.holder] : 'Loose',
+      hint: s.holder ? 'Tap a teammate to pass. Use the ring for goal, drop, throwaway, stall.' : 'Tap whoever picks up the disc.',
+      events: s.log.map((text, i) => ({ text, size: i ? '14px' : '16px', weight: i ? 500 : 700, color: i ? t.muted : t.text })),
+      oppTurn: () => go({ phase:'O', holder:null }, 'Opp turnover'),
+      oppScore: () => go({ phase:'O', holder:null, them: s.them + 1, point: s.point + 1, passes:0 }, 'Opp scores')
+    };
+  }
+}
+</script>
+</body>
+</html>

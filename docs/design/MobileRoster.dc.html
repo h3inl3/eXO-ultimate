@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Roster, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7CC0F7}a:hover{color:#A9D6FA}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, system-ui, sans-serif; overflow: hidden; position: relative">
+
+<header style="padding: 56px 20px 12px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div>
+<h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.5px">Roster</h1>
+<p style="margin: 2px 0 0; font-size: 14px; color: {{t.muted}}">Night Owls · 18 active · 9 MMP / 9 FMP</p>
+</div>
+<button aria-label="Sort and filter" style="width: 48px; height: 48px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+</button>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: 14px; background: {{t.surface}}; border: 1px solid {{t.line}}; color: {{t.muted}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M20 20l-4-4"></path></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search players</span>
+<input type="search" placeholder="Search name or number" style="flex: 1; border: 0; background: transparent; color: {{t.text}}; font: 16px Inter, sans-serif; outline: none">
+</label>
+<div role="tablist" aria-label="Filter roster" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: {{t.surface2}}">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+<button role="tab" aria-selected="{{f.on}}" onClick="{{ f.pick }}" style="height: 40px; border: 0; border-radius: 10px; background: {{f.bg}}; color: {{f.fg}}; font: 600 14px Inter, sans-serif">{{f.label}}</button>
+</sc-for>
+</div>
+</header>
+
+<main style="flex: 1; padding: 4px 20px 0; overflow: hidden">
+<ul style="list-style: none; margin: 0; padding: 0; border-radius: 16px; background: {{t.surface}}; border: 1px solid {{t.line}}">
+<sc-for list="{{players}}" as="p" hint-placeholder-count="7">
+<li style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 48px; border-top: {{p.border}}">
+<div style="width: 44px; height: 44px; border-radius: 50%; background: {{p.avatar}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px">{{p.num}}</div>
+<div style="flex: 1; min-width: 0">
+<div style="font-weight: 600; font-size: 16px">{{p.name}}</div>
+<div style="font-size: 13px; color: {{t.muted}}">{{p.pos}}</div>
+</div>
+<span style="padding: 4px 8px; border-radius: 8px; background: {{t.surface2}}; font-size: 12px; font-weight: 700; color: {{t.text}}">{{p.gm}}</span>
+<sc-if value="{{p.invite}}" hint-placeholder-val="{{ false }}">
+<span style="padding: 4px 8px; border-radius: 8px; border: 1.5px solid {{t.orange}}; font-size: 12px; font-weight: 700; color: {{t.text}}">Invite</span>
+</sc-if>
+</li>
+</sc-for>
+</ul>
+</main>
+
+<button aria-label="Add player" style="position: absolute; right: 20px; bottom: 108px; width: 64px; height: 64px; border-radius: 20px; border: 0; background: {{t.orange}}; color: #1A0D00; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.3)">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+</button>
+
+<nav aria-label="Main" style="display: flex; justify-content: space-around; padding: 8px 8px 28px; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+<sc-for list="{{tabs}}" as="tab" hint-placeholder-count="5">
+<a href="{{tab.href}}" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; min-height: 48px; justify-content: center; color: {{tab.color}}; text-decoration: none">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+<span style="font-size: 12px; font-weight: 600">{{tab.label}}</span>
+</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":true},"$preview":{"width":390,"height":844}}'>
+const THEME = (d) => d ? {
+  bg:'#07141F', surface:'#0F2233', surface2:'#163049', line:'#23415C', text:'#EAF3FA', muted:'#9DB3C6', link:'#7CC0F7',
+  blue:'#4EA8F2', onBlue:'#04111C', green:'#34C98B', orange:'#FF8A2A', chipBlue:'#123A5C', chipGreen:'#0F3B2E'
+} : {
+  bg:'#F3F7FB', surface:'#FFFFFF', surface2:'#E8F0F7', line:'#D3E0EB', text:'#0B1F33', muted:'#4A5D70', link:'#0B5FA5',
+  blue:'#0B5FA5', onBlue:'#FFFFFF', green:'#0B7A55', orange:'#F07A1A', chipBlue:'#DCEBF8', chipGreen:'#D9F2E7'
+};
+const ICONS = {
+  home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  roster:'M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 19v-1a3 3 0 0 0-3-3M4 19v-1a3 3 0 0 1 3-3',
+  games:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10',
+  plays:'M4 4h16v16H4zM8 9l3 3M11 9l-3 3M14 15h3M15 8c2 1 2 4 0 6',
+  stats:'M5 20V10M12 20V4M19 20v-7'
+};
+class Component extends DCLogic {
+  renderVals() {
+    const t = THEME(this.props.dark ?? true);
+    const sel = (this.state && this.state.filter) || 'Active';
+    const filters = ['Active','Inactive','Invited'].map((label) => ({
+      label, on: label === sel ? 'true' : 'false',
+      bg: label === sel ? t.blue : 'transparent', fg: label === sel ? t.onBlue : t.text,
+      pick: () => this.setState({ filter: label })
+    }));
+    const tabs = [['Home','home','MobileHome.dc.html'],['Roster','roster','MobileRoster.dc.html'],['Games','games','MobileScore.dc.html'],['Playbook','plays','MobilePlaybook.dc.html'],['Stats','stats','#']]
+      .map(([label,k,href],i) => ({ label, href, icon: ICONS[k], color: i === 1 ? t.link : t.muted }));
+    const players = [
+      ['7','Jo Park','Handler','FMP',false],['22','Kai Ito','Cutter','MMP',false],['3','Mei Chen','Handler · Cutter','FMP',true],
+      ['11','Sam Ruiz','Cutter','MMP',false],['18','Ria Das','Defender','FMP',false],['42','Alex Moe','Handler','MMP',true],
+      ['9','Dev Rao','Cutter','MMP',false]
+    ].map(([num,name,pos,gm,invite],i) => ({ num, name, pos, gm, invite,
+      avatar: gm === 'FMP' ? t.chipGreen : t.chipBlue, border: i ? '1px solid ' + t.line : '0' }));
+    return { t, tabs, filters: filters.map(f => ({ ...f })), players };
+  }
+}
+</script>
+</body>
+</html>
