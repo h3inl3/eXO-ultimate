@@ -13,3 +13,4 @@ ios/
 android/
 *.tsbuildinfo
 next-env.d.ts
+.claude/
