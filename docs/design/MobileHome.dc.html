@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team home, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5FA5}a:hover{color:#083F6E}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, system-ui, sans-serif; overflow: hidden">
+
+<header style="padding: 56px 20px 12px; display: flex; align-items: center; gap: 12px">
+<button aria-label="Switch team" style="flex: 1; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px 6px 6px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; text-align: left">
+<span style="width: 36px; height: 36px; border-radius: 10px; background: {{t.blue}}; color: {{t.onBlue}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px">eXO</span>
+<span style="flex: 1"><span style="display: block; font-weight: 700; font-size: 16px">Night Owls</span><span style="display: block; font-size: 12px; color: {{t.muted}}">Mixed · Coach</span></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+</button>
+<button aria-label="Notifications" style="width: 48px; height: 48px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center; position: relative">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+<span style="position: absolute; top: 10px; right: 11px; width: 9px; height: 9px; border-radius: 50%; background: {{t.orange}}"></span>
+</button>
+</header>
+
+<main style="flex: 1; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 20px; overflow: hidden">
+<section style="border-radius: 20px; padding: 20px; background: {{t.hero}}; color: #FFFFFF; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-size: 13px; font-weight: 600">Spring League · Game 4</span>
+<span style="padding: 4px 10px; border-radius: 999px; background: #FF8A2A; color: #1A0D00; font-size: 12px; font-weight: 700">LIVE</span>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; font-family: 'Space Grotesk', sans-serif">
+<div style="text-align: center"><div style="font-size: 13px; font-family: Inter, sans-serif">Us</div><div style="font-size: 52px; font-weight: 700; line-height: 1">7</div></div>
+<div style="font-size: 14px; font-family: Inter, sans-serif; text-align: center">Pt 13<br>Offense</div>
+<div style="text-align: center"><div style="font-size: 13px; font-family: Inter, sans-serif">Riptide</div><div style="font-size: 52px; font-weight: 700; line-height: 1">5</div></div>
+</div>
+<a href="MobileScore.dc.html" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; background: #FF8A2A; color: #1A0D00; font-weight: 700; font-size: 16px; text-decoration: none">Resume scoring</a>
+</section>
+
+<section style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
+<button style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; font: 600 12px Inter, sans-serif">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{a.bg}}; color: {{a.fg}}; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.icon}}"></path></svg>
+</span>
+{{a.label}}
+</button>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">Schedule</h2>
+<a href="#" style="font-size: 14px; font-weight: 600; color: {{t.link}}">See all</a>
+</div>
+<div style="border-radius: 16px; background: {{t.surface}}; border: 1px solid {{t.line}}">
+<sc-for list="{{games}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: {{g.border}}">
+<div style="width: 44px; text-align: center"><div style="font-size: 11px; font-weight: 700; color: {{t.muted}}">{{g.day}}</div><div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700">{{g.date}}</div></div>
+<div style="flex: 1"><div style="font-weight: 600">vs {{g.opp}}</div><div style="font-size: 13px; color: {{t.muted}}">{{g.meta}}</div></div>
+<span style="padding: 4px 10px; border-radius: 999px; background: {{g.chipBg}}; color: {{g.chipFg}}; font-size: 13px; font-weight: 700">{{g.result}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+</main>
+
+<nav aria-label="Main" style="display: flex; justify-content: space-around; padding: 8px 8px 28px; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+<sc-for list="{{tabs}}" as="tab" hint-placeholder-count="5">
+<a href="{{tab.href}}" style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; min-height: 48px; justify-content: center; color: {{tab.color}}; text-decoration: none">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+<span style="font-size: 12px; font-weight: 600">{{tab.label}}</span>
+</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+const THEME = (d) => d ? {
+  bg:'#07141F', surface:'#0F2233', surface2:'#163049', line:'#23415C', text:'#EAF3FA', muted:'#9DB3C6', link:'#7CC0F7',
+  blue:'#4EA8F2', onBlue:'#04111C', green:'#34C98B', orange:'#FF8A2A', chipBlue:'#123A5C', chipGreen:'#0F3B2E',
+  hero:'linear-gradient(135deg,#0B4F8A,#0B6B5A)'
+} : {
+  bg:'#F3F7FB', surface:'#FFFFFF', surface2:'#E8F0F7', line:'#D3E0EB', text:'#0B1F33', muted:'#4A5D70', link:'#0B5FA5',
+  blue:'#0B5FA5', onBlue:'#FFFFFF', green:'#0B7A55', orange:'#F07A1A', chipBlue:'#DCEBF8', chipGreen:'#D9F2E7',
+  hero:'linear-gradient(135deg,#0B5FA5,#0B7A55)'
+};
+const ICONS = {
+  home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  roster:'M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 19v-1a3 3 0 0 0-3-3M4 19v-1a3 3 0 0 1 3-3',
+  games:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10',
+  plays:'M4 4h16v16H4zM8 9l3 3M11 9l-3 3M14 15h3M15 8c2 1 2 4 0 6',
+  stats:'M5 20V10M12 20V4M19 20v-7',
+  addUser:'M15 19v-1a4 4 0 0 0-8 0v1M11 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19 8v6M16 11h6',
+  cal:'M4 6h16v14H4zM4 10h16M8 3v5M16 3v5',
+  pen:'M4 20h4L19 9l-4-4L4 16zM13 7l4 4'
+};
+class Component extends DCLogic {
+  renderVals() {
+    const t = THEME(this.props.dark ?? false);
+    const tabs = [['Home','home','MobileHome.dc.html'],['Roster','roster','MobileRoster.dc.html'],['Games','games','MobileScore.dc.html'],['Playbook','plays','MobilePlaybook.dc.html'],['Stats','stats','#']]
+      .map(([label,k,href],i) => ({ label, href, icon: ICONS[k], color: i === 0 ? t.link : t.muted }));
+    const actions = [
+      { label:'Add player', icon: ICONS.addUser, bg: t.chipBlue, fg: t.link },
+      { label:'New game', icon: ICONS.games, bg: t.orange, fg: '#1A0D00' },
+      { label:'Season', icon: ICONS.cal, bg: t.chipGreen, fg: t.green },
+      { label:'New play', icon: ICONS.pen, bg: t.surface2, fg: t.text }
+    ];
+    const games = [
+      { day:'SAT', date:'14', opp:'Riptide', meta:'10:00 · Field 3 · to 15', result:'LIVE', chipBg: t.orange, chipFg:'#1A0D00' },
+      { day:'SAT', date:'7', opp:'Polar Bears', meta:'Final · to 15', result:'W 15–11', chipBg: t.chipGreen, chipFg: t.text },
+      { day:'SUN', date:'1', opp:'Sky Hawks', meta:'Final · capped', result:'L 12–13', chipBg: t.surface2, chipFg: t.text }
+    ].map((g,i) => ({ ...g, border: i ? '1px solid ' + t.line : '0' }));
+    return { t, tabs, actions, games };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>eXO Ultimate foundations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0B5FA5}a:hover{color:#083F6E}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1180px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 40px; background: {{t.bg}}; color: {{t.text}}; font-family: Inter, system-ui, sans-serif">
+
+<header style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 16px">
+<div style="width: 56px; height: 56px; border-radius: 16px; background: {{t.blue}}; display: flex; align-items: center; justify-content: center; position: relative">
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: {{t.onBlue}}; letter-spacing: -0.5px">eXO</span>
+<span style="position: absolute; right: -4px; top: -4px; width: 16px; height: 16px; border-radius: 50%; background: {{t.orange}}; border: 3px solid {{t.bg}}"></span>
+</div>
+<div>
+<h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -1px">eXO Ultimate</h1>
+<p style="margin: 4px 0 0; color: {{t.muted}}; font-size: 16px">One design language for Web, iOS and Android</p>
+</div>
+</div>
+<div style="display: flex; gap: 8px">
+<span style="padding: 8px 14px; border-radius: 999px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 14px; font-weight: 600">Web</span>
+<span style="padding: 8px 14px; border-radius: 999px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 14px; font-weight: 600">iOS</span>
+<span style="padding: 8px 14px; border-radius: 999px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 14px; font-weight: 600">Android</span>
+</div>
+</header>
+
+<section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+<div style="background: #FFFFFF; border: 1px solid #D3E0EB; border-radius: 20px; padding: 24px; color: #0B1F33">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">Light mode</h2>
+<span style="font-size: 13px; color: #4A5D70">Daylight on the sideline</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{light}}" as="s" hint-placeholder-count="8">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="height: 64px; border-radius: 12px; background: {{s.hex}}; border: 1px solid #D3E0EB"></div>
+<span style="font-size: 13px; font-weight: 600">{{s.name}}</span>
+<span style="font-size: 12px; color: #4A5D70; font-family: ui-monospace, monospace">{{s.hex}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="background: #0F2233; border: 1px solid #23415C; border-radius: 20px; padding: 24px; color: #EAF3FA">
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 20px">Dark mode</h2>
+<span style="font-size: 13px; color: #9DB3C6">Evening games, low glare</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{dark}}" as="s" hint-placeholder-count="8">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="height: 64px; border-radius: 12px; background: {{s.hex}}; border: 1px solid #23415C"></div>
+<span style="font-size: 13px; font-weight: 600">{{s.name}}</span>
+<span style="font-size: 12px; color: #9DB3C6; font-family: ui-monospace, monospace">{{s.hex}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section style="display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; flex: 1; min-height: 0">
+<div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: {{t.muted}}">Type</h2>
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -1px; line-height: 1">US 7 – 5</div>
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700">Spring League</div>
+<div style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600">Next game · Sat 10:00</div>
+<div style="font-size: 16px; line-height: 1.5">Body text in Inter. Readable at arm's length, in sunlight.</div>
+<div style="font-size: 13px; color: {{t.muted}}">Caption · Space Grotesk for display and numbers, Inter for UI</div>
+<h2 style="margin: 12px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: {{t.muted}}">Shape</h2>
+<div style="display: flex; gap: 12px; align-items: end">
+<div style="width: 48px; height: 48px; border-radius: 8px; background: {{t.surface2}}"></div>
+<div style="width: 64px; height: 64px; border-radius: 16px; background: {{t.surface2}}"></div>
+<div style="width: 64px; height: 64px; border-radius: 50%; background: {{t.surface2}}"></div>
+<span style="font-size: 13px; color: {{t.muted}}">8 · 16 · round</span>
+</div>
+</div>
+
+<div style="background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+<h2 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: {{t.muted}}">Components</h2>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button style="height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: {{t.blue}}; color: {{t.onBlue}}; font: 600 16px Inter, sans-serif">Primary</button>
+<button style="height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: {{t.green}}; color: {{t.onGreen}}; font: 600 16px Inter, sans-serif">Confirm</button>
+<button style="height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: {{t.orange}}; color: #1A0D00; font: 700 16px Inter, sans-serif">Start game</button>
+<button style="height: 48px; padding: 0 20px; border-radius: 12px; background: transparent; border: 1.5px solid {{t.line}}; color: {{t.text}}; font: 600 16px Inter, sans-serif">Secondary</button>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<span style="padding: 6px 12px; border-radius: 999px; background: {{t.chipBlue}}; color: {{t.text}}; font-size: 13px; font-weight: 600">Mixed</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: {{t.chipGreen}}; color: {{t.text}}; font-size: 13px; font-weight: 600">Women</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: {{t.surface2}}; color: {{t.text}}; font-size: 13px; font-weight: 600">Open</span>
+<span style="padding: 6px 12px; border-radius: 999px; background: {{t.orange}}; color: #1A0D00; font-size: 13px; font-weight: 700">LIVE</span>
+<span style="padding: 6px 12px; border-radius: 999px; border: 1.5px solid {{t.line}}; color: {{t.muted}}; font-size: 13px; font-weight: 600">Coach</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div style="border-radius: 16px; padding: 18px; background: {{t.hero}}; color: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-size: 13px; font-weight: 600; opacity: 0.9">Pt 13 · Offense</span>
+<span style="padding: 4px 10px; border-radius: 999px; background: #FF8A2A; color: #1A0D00; font-size: 12px; font-weight: 700">LIVE</span>
+</div>
+<div style="display: flex; align-items: baseline; gap: 12px; font-family: 'Space Grotesk', sans-serif">
+<span style="font-size: 40px; font-weight: 700">7</span><span style="font-size: 20px; opacity: 0.8">–</span><span style="font-size: 40px; font-weight: 700">5</span>
+<span style="font-size: 15px; margin-left: auto">vs Riptide</span>
+</div>
+</div>
+<div style="border-radius: 16px; border: 1px solid {{t.line}}; padding: 6px 0">
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: {{t.chipBlue}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700">7</div>
+<div style="flex: 1"><div style="font-weight: 600">Jo Park</div><div style="font-size: 13px; color: {{t.muted}}">Handler · FMP</div></div>
+<span style="font-size: 13px; font-weight: 700; color: {{t.green}}">+6</span>
+</div>
+<div style="height: 1px; background: {{t.line}}; margin: 0 16px"></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px">
+<div style="width: 40px; height: 40px; border-radius: 50%; background: {{t.chipGreen}}; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700">22</div>
+<div style="flex: 1"><div style="font-weight: 600">Kai Ito</div><div style="font-size: 13px; color: {{t.muted}}">Cutter · MMP</div></div>
+<span style="font-size: 13px; font-weight: 700; color: {{t.green}}">+4</span>
+</div>
+</div>
+</div>
+<div style="display: flex; justify-content: space-around; padding: 10px; border-radius: 16px; background: {{t.surface2}}">
+<sc-for list="{{tabs}}" as="tab" hint-placeholder-count="5">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; color: {{tab.color}}">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tab.icon}}"></path></svg>
+<span style="font-size: 12px; font-weight: 600">{{tab.label}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1280,"height":1180}}'>
+const THEME = (d) => d ? {
+  bg:'#07141F', surface:'#0F2233', surface2:'#163049', line:'#23415C', text:'#EAF3FA', muted:'#9DB3C6',
+  blue:'#4EA8F2', onBlue:'#04111C', green:'#34C98B', onGreen:'#04150E', orange:'#FF8A2A',
+  chipBlue:'#123A5C', chipGreen:'#0F3B2E', hero:'linear-gradient(135deg,#0B4F8A,#0B6B5A)'
+} : {
+  bg:'#F3F7FB', surface:'#FFFFFF', surface2:'#E8F0F7', line:'#D3E0EB', text:'#0B1F33', muted:'#4A5D70',
+  blue:'#0B5FA5', onBlue:'#FFFFFF', green:'#0B7A55', onGreen:'#FFFFFF', orange:'#F07A1A',
+  chipBlue:'#DCEBF8', chipGreen:'#D9F2E7', hero:'linear-gradient(135deg,#0B5FA5,#0B7A55)'
+};
+const ICONS = {
+  home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  roster:'M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 19v-1a3 3 0 0 0-3-3M4 19v-1a3 3 0 0 1 3-3',
+  games:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10',
+  plays:'M4 4h16v16H4zM8 9l3 3M11 9l-3 3M14 15h3M15 8c2 1 2 4 0 6',
+  stats:'M5 20V10M12 20V4M19 20v-7'
+};
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const t = THEME(dark);
+    const L = THEME(false), D = THEME(true);
+    const tabs = [['Home','home'],['Roster','roster'],['Games','games'],['Playbook','plays'],['Stats','stats']]
+      .map(([label,k],i) => ({ label, icon: ICONS[k], color: i === 0 ? t.blue : t.muted }));
+    return { t, tabs,
+      light: [['Background',L.bg],['Surface',L.surface],['Text',L.text],['Muted',L.muted],['Blue · primary',L.blue],['Green · success',L.green],['Teal · accent','#0E7C86'],['Orange · highlight',L.orange]].map(([name,hex]) => ({name,hex})),
+      dark: [['Background',D.bg],['Surface',D.surface],['Text',D.text],['Muted',D.muted],['Blue · primary',D.blue],['Green · success',D.green],['Teal · accent','#2BB3B1'],['Orange · highlight',D.orange]].map(([name,hex]) => ({name,hex}))
+    };
+  }
+}
+</script>
+</body>
+</html>

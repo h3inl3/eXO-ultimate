@@ -1,0 +1,109 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "h": 1180,
+      "title": "Foundations — color, type, components",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "MobileHome.dc.html": {
+      "h": 844,
+      "title": "Mobile · Team home",
+      "w": 390,
+      "x": 0,
+      "y": 1580
+    },
+    "MobilePlaybook.dc.html": {
+      "h": 844,
+      "title": "Mobile · Play editor",
+      "w": 390,
+      "x": 940,
+      "y": 1580
+    },
+    "MobileRoster.dc.html": {
+      "h": 844,
+      "title": "Mobile · Roster",
+      "w": 390,
+      "x": 470,
+      "y": 1580
+    },
+    "MobileScore.dc.html": {
+      "h": 390,
+      "is_interactive": true,
+      "title": "Mobile · Live scoring (landscape)",
+      "w": 844,
+      "x": 1410,
+      "y": 1580
+    },
+    "WebDashboard.dc.html": {
+      "expand": "fill",
+      "h": 960,
+      "title": "Web · Team home",
+      "w": 1440,
+      "x": 0,
+      "y": 2824
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-26T21:35:23Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": ["t1", "t2", "t3", "s1", "s2"],
+  "notes": {
+    "s1": {
+      "fill": "blue",
+      "text": "Every artboard has a Dark mode switch in Tweaks. One token set drives both modes on all three platforms. Orange is only used as a fill (never as text on white) so contrast passes.",
+      "w": 320,
+      "x": 1360,
+      "y": 0
+    },
+    "s2": {
+      "fill": "orange",
+      "text": "The scoring screen works in Play mode: tap a teammate to pass, then use the holder's radial menu. Targets are 64px or larger.",
+      "w": 320,
+      "x": 2334,
+      "y": 1580
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 1280,
+      "text": "eXO Ultimate — Foundations",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 2254,
+      "text": "Mobile — iOS & Android share one layout",
+      "w": 240,
+      "x": 0,
+      "y": 1280
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Web — same nav, same components",
+      "w": 240,
+      "x": 0,
+      "y": 2524
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "MobileHome.dc.html",
+    "MobileRoster.dc.html",
+    "MobilePlaybook.dc.html",
+    "MobileScore.dc.html",
+    "WebDashboard.dc.html"
+  ],
+  "pages": [],
+  "title": "eXO Ultimate — App UI"
+}
