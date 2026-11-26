@@ -13,7 +13,8 @@
     "test": "turbo run test",
     "db:up": "docker compose -f infra/docker-compose.yml up -d",
     "db:down": "docker compose -f infra/docker-compose.yml down",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "api:generate": "pnpm --filter @exo/api openapi && pnpm --filter @exo/api-client generate && prettier --write packages/api-client"
   },
   "devDependencies": {
     "prettier": "^3.6.0",

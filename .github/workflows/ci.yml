@@ -5,12 +5,28 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_USER: exo, POSTGRES_PASSWORD: exo, POSTGRES_DB: exo }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://exo:exo@localhost:5432/exo
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
-      # Switch to --frozen-lockfile once pnpm-lock.yaml is committed.
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Migrations apply cleanly
+        run: pnpm --filter @exo/api db:migrate
+      - name: Migrations and API client match the code
+        run: |
+          pnpm --filter @exo/api db:generate
+          pnpm api:generate
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+      - run: pnpm build

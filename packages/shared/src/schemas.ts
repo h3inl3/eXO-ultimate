@@ -79,3 +79,20 @@ export const playSave = z.object({
   diagram: z.unknown(), // validated structurally by plays/diagram.ts
   version: z.int().nonnegative().optional(),
 });
+
+// Response shapes. Used for the OpenAPI spec, so generated clients are typed.
+export const team = teamCreate.extend({ id, createdAt: z.iso.datetime({ offset: true }) });
+export const teamWithRole = teamCreate.extend({ id, role: memberRole });
+export const player = z.object({
+  id,
+  teamId: id,
+  userId: id.nullable(),
+  name: z.string(),
+  number: z.int().nullable(),
+  genderMatch: z.enum(GENDER_MATCHES).nullable(),
+  positions: z.array(z.enum(POSITIONS)),
+  email: z.string().nullable(),
+  active: z.boolean(),
+  createdAt: z.iso.datetime({ offset: true }),
+});
+export const error = z.object({ error: z.string() });

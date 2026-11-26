@@ -1,6 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { and, eq, or, sql } from 'drizzle-orm';
-import { playerCreate, playerUpdate } from '@exo/shared';
+import { z } from 'zod';
+import { error, player, playerCreate, playerUpdate } from '@exo/shared';
+import { idParam, json } from '../openapi.ts';
+
+const tags = ['players'];
+const teamParam = json(z.object({ teamId: z.uuid() }));
 import { db } from '../db/client.ts';
 import { gameEvents, players } from '../db/schema.ts';
 import { HttpError, requireRole } from '../auth.ts';
@@ -14,6 +19,14 @@ async function loadPlayer(id: string) {
 export async function playerRoutes(app: FastifyInstance) {
   app.get<{ Params: { teamId: string }; Querystring: { includeInactive?: string } }>(
     '/v1/teams/:teamId/players',
+    {
+      schema: {
+        tags,
+        params: teamParam,
+        querystring: json(z.object({ includeInactive: z.enum(['true', 'false']).optional() })),
+        response: { 200: json(z.array(player), 'output') },
+      },
+    },
     async (req) => {
       await requireRole(req, req.params.teamId, 'player');
       const where = req.query.includeInactive === 'true'
@@ -23,14 +36,18 @@ export async function playerRoutes(app: FastifyInstance) {
     },
   );
 
-  app.post<{ Params: { teamId: string } }>('/v1/teams/:teamId/players', async (req, reply) => {
+  app.post<{ Params: { teamId: string } }>('/v1/teams/:teamId/players', {
+    schema: { tags, params: teamParam, body: json(playerCreate), response: { 201: json(player, 'output'), 404: json(error) } },
+  }, async (req, reply) => {
     await requireRole(req, req.params.teamId, 'coach');
     const body = playerCreate.parse(req.body);
     const [p] = await db.insert(players).values({ ...body, teamId: req.params.teamId }).returning();
     return reply.code(201).send(p);
   });
 
-  app.patch<{ Params: { id: string } }>('/v1/players/:id', async (req) => {
+  app.patch<{ Params: { id: string } }>('/v1/players/:id', {
+    schema: { tags, params: idParam, body: json(playerUpdate), response: { 200: json(player, 'output'), 404: json(error) } },
+  }, async (req) => {
     const existing = await loadPlayer(req.params.id);
     await requireRole(req, existing.teamId, 'coach');
     const body = playerUpdate.parse(req.body);
@@ -39,7 +56,13 @@ export async function playerRoutes(app: FastifyInstance) {
   });
 
   // Soft-delete when the player has recorded stats; hard-delete otherwise.
-  app.delete<{ Params: { id: string } }>('/v1/players/:id', async (req, reply) => {
+  app.delete<{ Params: { id: string } }>('/v1/players/:id', {
+    schema: {
+      tags,
+      params: idParam,
+      response: { 200: json(z.object({ deleted: z.enum(['soft', 'hard']) }), 'output'), 404: json(error) },
+    },
+  }, async (req, reply) => {
     const existing = await loadPlayer(req.params.id);
     await requireRole(req, existing.teamId, 'coach');
     const [{ n } = { n: 0 }] = await db

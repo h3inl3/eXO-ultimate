@@ -1,6 +1,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { asc, eq } from 'drizzle-orm';
-import { computeGameStats, eventBatch, replay, type GameEvent, type SeasonRules } from '@exo/shared';
+import { z } from 'zod';
+import { computeGameStats, error, eventBatch, gameEvent, replay, type GameEvent, type SeasonRules } from '@exo/shared';
+import { idParam, json } from '../openapi.ts';
 import { db } from '../db/client.ts';
 import { gameEvents, games, seasons } from '../db/schema.ts';
 import { HttpError, requireRole } from '../auth.ts';
@@ -36,9 +38,22 @@ function deviceId(req: FastifyRequest): string {
   return d;
 }
 
+const tags = ['games'];
+const deviceHeader = json(z.object({ 'x-device-id': z.string().min(1) }));
+// shortcut: batch `state` and summary bodies are untyped in the spec; add schemas when clients consume them (Phase 3/4).
+const anyObject = { type: 'object', additionalProperties: true };
+
 export async function gameRoutes(app: FastifyInstance) {
   // Single-scorekeeper claim. `force` lets a coach take over from a lost/dead device.
-  app.post<{ Params: { id: string }; Body: { force?: boolean } }>('/v1/games/:id/claim', async (req) => {
+  app.post<{ Params: { id: string }; Body: { force?: boolean } }>('/v1/games/:id/claim', {
+    schema: {
+      tags,
+      params: idParam,
+      headers: deviceHeader,
+      body: json(z.object({ force: z.boolean().optional() })),
+      response: { 200: json(z.object({ claimed: z.literal(true), deviceId: z.string() })), 409: json(error) },
+    },
+  }, async (req) => {
     const { game, teamId } = await loadGame(req.params.id);
     const role = await requireRole(req, teamId, 'stat_keeper');
     const device = deviceId(req);
@@ -51,7 +66,18 @@ export async function gameRoutes(app: FastifyInstance) {
   });
 
   // Idempotent batch upload from the scorekeeper device. Re-sending events is safe.
-  app.post<{ Params: { id: string } }>('/v1/games/:id/events/batch', async (req) => {
+  app.post<{ Params: { id: string } }>('/v1/games/:id/events/batch', {
+    schema: {
+      tags,
+      params: idParam,
+      headers: deviceHeader,
+      body: json(eventBatch),
+      response: {
+        200: { type: 'object', required: ['accepted', 'duplicate', 'state'], properties: { accepted: { type: 'integer' }, duplicate: { type: 'integer' }, state: anyObject } },
+        409: json(error),
+      },
+    },
+  }, async (req) => {
     const { game, teamId, rules } = await loadGame(req.params.id);
     await requireRole(req, teamId, 'stat_keeper');
     if (game.scorekeeperDevice !== deviceId(req)) throw new HttpError(409, 'claim the game first');
@@ -78,13 +104,17 @@ export async function gameRoutes(app: FastifyInstance) {
     return { accepted: fresh.length, duplicate: events.length - fresh.length, state };
   });
 
-  app.get<{ Params: { id: string } }>('/v1/games/:id/events', async (req) => {
+  app.get<{ Params: { id: string } }>('/v1/games/:id/events', {
+    schema: { tags, params: idParam, response: { 200: json(z.array(gameEvent), 'output') } },
+  }, async (req) => {
     const { teamId } = await loadGame(req.params.id);
     await requireRole(req, teamId, 'player');
     return loadEvents(req.params.id);
   });
 
-  app.get<{ Params: { id: string } }>('/v1/games/:id/summary', async (req) => {
+  app.get<{ Params: { id: string } }>('/v1/games/:id/summary', {
+    schema: { tags, params: idParam, response: { 200: anyObject } },
+  }, async (req) => {
     const { game, teamId, rules } = await loadGame(req.params.id);
     await requireRole(req, teamId, 'player');
     const events = await loadEvents(game.id);

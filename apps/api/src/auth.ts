@@ -22,10 +22,13 @@ export class HttpError extends Error {
  * TODO(Phase 1): replace with OIDC JWT verification (Clerk/Auth0/Supabase),
  * mapping the token `sub` to users.auth_subject.
  */
+// Health checks, the min-version check (old clients must reach it) and the API docs.
+const PUBLIC = /^\/(health|v1\/meta|docs)(\/|\?|$)/;
+
 export function registerAuth(app: FastifyInstance) {
   app.decorateRequest('userId', '');
   app.addHook('onRequest', async (req) => {
-    if (req.url === '/health') return;
+    if (PUBLIC.test(req.url)) return;
     if (process.env.DEV_AUTH === 'true') {
       const u = req.headers['x-dev-user'];
       if (typeof u === 'string' && u) {
