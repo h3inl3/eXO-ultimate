@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "eXO Ultimate",
+    "slug": "exo-ultimate",
+    "scheme": "exoultimate",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": { "bundleIdentifier": "com.exoultimate.app", "supportsTablet": true },
+    "android": { "package": "com.exoultimate.app" },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}
