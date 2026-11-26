@@ -36,11 +36,15 @@ Dev auth is a stub. Send `x-dev-user: <user uuid>` on API requests until OIDC la
 
 ## Deploy
 
+Everything runs in one AWS project in **us-east-2** (CLI profile `exo-ultimate`).
+
 | App | Where | How |
 |-----|-------|-----|
-| API | Any container host (Fly.io / Render / ECS) | `docker build -f apps/api/Dockerfile .`. Set `DATABASE_URL`; run `pnpm --filter @exo/api db:migrate` as the release command |
-| Web | Vercel | Import the repo, set Root Directory to `apps/web`, set `NEXT_PUBLIC_API_URL` |
+| API + DB | Lambda Web Function + private RDS Postgres 17, stack `exo` from [infra/aws.yaml](infra/aws.yaml) | `apps/api/scripts/package-lambda.sh`, upload `apps/api/dist/function.zip` to the stack's `CodeBucket`, then update the stack with `ApiCodeKey` / `ApiCodeVersion` (the new S3 version id). Migrations run on startup under an advisory lock. The DB password lives in the RDS-managed secret |
+| Web | Amplify Hosting, built from [amplify.yml](amplify.yml) | Connected to GitHub in the Amplify console with app root `apps/web`; set `NEXT_PUBLIC_API_URL` |
 | Mobile | EAS | `cd apps/mobile && eas init && eas build --profile preview` |
+
+The API Dockerfile still works for running the API in a container locally.
 
 ## Try the scoring prototype
 
