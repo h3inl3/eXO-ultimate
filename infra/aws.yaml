@@ -1,0 +1,256 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  eXO Ultimate API: Lambda Web Function + private RDS Postgres, in the project's selected Region.
+  Deploy once with ApiCodeKey empty (creates the bucket and database), upload
+  apps/api/dist/function.zip, then update the stack with ApiCodeKey and ApiCodeVersion.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Two or more public subnets in different AZs (the connector's Elastic IPs need an internet gateway route)
+  ApiCodeKey:
+    Type: String
+    Default: ''
+    Description: S3 key of the API zip in the code bucket. Empty = no function yet.
+  ApiCodeVersion:
+    Type: String
+    Default: ''
+    Description: S3 version id of that zip (a new upload under the same key needs a new version id)
+
+Conditions:
+  HasCode: !Not [!Equals [!Ref ApiCodeKey, '']]
+
+Resources:
+  # ---------- Code bucket ----------
+  CodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub exo-api-code-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration: { Status: Enabled }
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldZips
+            Status: Enabled
+            NoncurrentVersionExpiration: { NoncurrentDays: 30 }
+
+  CodeBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CodeBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: [s3:GetObject, s3:GetObjectVersion]
+            Resource: !Sub ${CodeBucket.Arn}/*
+            Condition:
+              StringEquals: { aws:SourceAccount: !Ref AWS::AccountId }
+              ArnLike: { aws:SourceArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:web-function/*' }
+          - Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource: [!GetAtt CodeBucket.Arn, !Sub '${CodeBucket.Arn}/*']
+            Condition:
+              Bool: { aws:SecureTransport: 'false' }
+
+  # ---------- Network ----------
+  ConnectorSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: exo-api network connector (outbound only)
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0, Description: AWS APIs and identity providers }
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: exo Postgres, reachable only from the API connector
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 5432, ToPort: 5432, SourceSecurityGroupId: !Ref ConnectorSecurityGroup }
+
+  # Separate resource so the two groups can reference each other.
+  ConnectorToDatabase:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref ConnectorSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      DestinationSecurityGroupId: !Ref DatabaseSecurityGroup
+
+  ConnectorOperatorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+            # No aws:SourceAccount condition: Lambda's connector service doesn't send it and
+            # fails with "unable to assume the provided NetworkConnectorOperatorRole".
+      Policies:
+        - PolicyName: manage-connector-enis
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ec2:CreateNetworkInterface
+                Resource:
+                  - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
+                  - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/*
+                  - !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:security-group/*
+              - Effect: Allow
+                Action: ec2:CreateTags
+                Resource: !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
+                Condition:
+                  StringEquals: { ec2:ManagedResourceOperator: network-connectors.lambda.amazonaws.com }
+              - Effect: Allow
+                Action: ec2:AllocateAddress
+                Resource: !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:elastic-ip/*
+              - Effect: Allow
+                Action: ec2:AssociateAddress
+                Resource: !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:elastic-ip/*
+                Condition:
+                  StringLike: { 'aws:ResourceTag/aws:lambda:networkConnectorId': nc-* }
+              - Effect: Allow
+                Action: [ec2:AllocateAddress, ec2:AssociateAddress]
+                Resource: !Sub arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*
+                Condition:
+                  StringEquals: { ec2:ManagedResourceOperator: network-connectors.lambda.amazonaws.com }
+
+  Connector:
+    Type: AWS::Lambda::NetworkConnector
+    Properties:
+      Name: exo-api-egress
+      OperatorRole: !GetAtt ConnectorOperatorRole.Arn
+      Configuration:
+        VpcEgressConfiguration:
+          SubnetIds: !Ref SubnetIds
+          SecurityGroupIds: [!Ref ConnectorSecurityGroup]
+          NetworkProtocol: IPv4
+          AssociatedComputeResourceTypes: [WebFunction]
+          # Public IPv4 egress (Secrets Manager, OIDC keys) without a NAT gateway.
+          ElasticIpConfiguration: { Type: ServiceManaged }
+
+  # ---------- Database ----------
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: exo Postgres
+      SubnetIds: !Ref SubnetIds
+
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: exo-db
+      Engine: postgres
+      EngineVersion: '17'          # matches CI
+      DBInstanceClass: db.t4g.micro
+      AllocatedStorage: '20'
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: exo
+      MasterUsername: exo_admin
+      ManageMasterUserPassword: true   # password lives in a rotating Secrets Manager secret
+      PubliclyAccessible: false
+      MultiAZ: false
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      VPCSecurityGroups: [!Ref DatabaseSecurityGroup]
+      BackupRetentionPeriod: 7
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+
+  # ---------- API ----------
+  ApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: read-db-secret
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !GetAtt Database.MasterUserSecret.SecretArn
+
+  ApiFunction:
+    Type: AWS::Lambda::WebFunction
+    Condition: HasCode
+    Properties:
+      FunctionName: exo-api
+
+  ApiRevision:
+    Type: AWS::Lambda::WebFunctionRevision
+    Condition: HasCode
+    DependsOn: ApiFunction
+    Properties:
+      FunctionName: exo-api
+      BuildConfig:
+        CodeConfig:
+          S3Object:
+            Bucket: !Ref CodeBucket
+            Key: !Ref ApiCodeKey
+            VersionId: !Ref ApiCodeVersion
+        RuntimeConfig:
+          Runtime: nodejs24.x
+      ServiceConfig:
+        ExecutionRoleArn: !GetAtt ApiRole.Arn
+        TimeoutSeconds: 30
+        EgressNetworkConnectorArn: !GetAtt Connector.LatestVersionArn
+        EnvironmentVariables:
+          NODE_ENV: production
+          # No password here: the app reads it from DB_SECRET_ARN for each new connection.
+          DATABASE_URL: !Sub postgres://exo_admin@${Database.Endpoint.Address}:${Database.Endpoint.Port}/exo?sslmode=require
+          DB_SECRET_ARN: !GetAtt Database.MasterUserSecret.SecretArn
+          MIGRATE_ON_START: 'true'
+          MIGRATIONS_DIR: /var/task/drizzle
+
+  ApiEndpoint:
+    Type: AWS::Lambda::WebFunctionEndpoint
+    Condition: HasCode
+    DependsOn: [ApiFunction, ApiRevision]
+    Properties:
+      FunctionName: exo-api
+      EndpointName: default
+      EndpointType: HomeRegion
+      # Public: the app does its own auth (401 on everything but /health, /v1/meta, /docs).
+      # Switches to IamAuth + CloudFront OAC once api.<domain> exists.
+      AuthType: ApplicationManaged
+      RevisionWeights:
+        - RevisionId: !GetAtt ApiRevision.RevisionId
+          Weight: 100
+
+Outputs:
+  CodeBucket:
+    Value: !Ref CodeBucket
+  DatabaseEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+  DatabaseSecretArn:
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+  ApiUrl:
+    Condition: HasCode
+    Value: !Sub https://${ApiEndpoint.DomainName}
