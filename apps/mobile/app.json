@@ -6,9 +6,25 @@
     "version": "0.1.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
-    "ios": { "bundleIdentifier": "com.exoultimate.app", "supportsTablet": true },
-    "android": { "package": "com.exoultimate.app" },
-    "plugins": ["expo-router"],
-    "experiments": { "typedRoutes": true }
+    "ios": {
+      "bundleIdentifier": "com.exoultimate.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.exoultimate.app"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c02c05bd-2825-4598-b1fd-805df36083d6"
+      }
+    },
+    "owner": "h3inl3-exo"
   }
 }
