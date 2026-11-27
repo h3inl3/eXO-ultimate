@@ -81,6 +81,9 @@ export function registerAuth(app: FastifyInstance) {
 
 const RANK: Record<Role, number> = { player: 0, stat_keeper: 1, coach: 2, owner: 3 };
 
+/** Coaches and owners; only they see members' contact details. */
+export const isStaff = (role: Role) => RANK[role] >= RANK.coach;
+
 /** Throws 403 unless the user is on the team with at least `min` role. */
 export async function requireRole(req: FastifyRequest, teamId: string, min: Role): Promise<Role> {
   const [m] = await db

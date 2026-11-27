@@ -5,7 +5,7 @@ import { error, me, member, memberAdd, memberUpdate, team, teamCreate, teamUpdat
 import { idParam, json } from '../openapi.ts';
 import { db } from '../db/client.ts';
 import { players, teamMembers, teams, users } from '../db/schema.ts';
-import { HttpError, requireRole } from '../auth.ts';
+import { HttpError, isStaff, requireRole } from '../auth.ts';
 
 const memberParams = json(z.object({ id: z.uuid(), userId: z.uuid() }));
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -84,9 +84,9 @@ export async function teamRoutes(app: FastifyInstance) {
   app.get<{ Params: { id: string } }>('/v1/teams/:id/members', {
     schema: { tags: ['members'], params: idParam, response: { 200: json(z.array(member), 'output'), 404: json(error) } },
   }, async (req) => {
-    await requireRole(req, req.params.id, 'player');
+    const role = await requireRole(req, req.params.id, 'player');
     return db
-      .select({ userId: users.id, email: users.email, name: users.name, role: teamMembers.role })
+      .select({ userId: users.id, email: isStaff(role) ? users.email : sql<null>`null`, name: users.name, role: teamMembers.role })
       .from(teamMembers)
       .innerJoin(users, eq(users.id, teamMembers.userId))
       .where(eq(teamMembers.teamId, req.params.id))

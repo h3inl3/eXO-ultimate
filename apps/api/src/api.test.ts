@@ -108,6 +108,25 @@ describe('player invites', () => {
     assert.equal(roster.body.find((p: { id: string }) => p.id === pid).userId, await meId('jo'));
   });
 
+  test('only coaches and owners see email addresses', async () => {
+    await call('icoach', 'POST', `/v1/teams/${team}/players`, { name: 'Dev', email: 'dev@example.com' });
+    const emails = async (as: string, path: string) =>
+      (await call(as, 'GET', `/v1/teams/${team}/${path}`)).body.map((r: { email: string | null }) => r.email);
+    assert.ok((await emails('jo', 'players')).every((e: unknown) => e === null));
+    assert.ok((await emails('jo', 'members')).every((e: unknown) => e === null));
+    assert.ok((await emails('icoach', 'players')).includes('dev@example.com'));
+    assert.ok((await emails('icoach', 'members')).includes(`${u('jo')}@dev.local`));
+  });
+
+  test('deactivated players cannot be invited or use an old code', async () => {
+    const pid = await newPlayer('Gone');
+    const code = await invite(pid);
+    await call('icoach', 'PATCH', `/v1/players/${pid}`, { active: false });
+    assert.equal((await call('gone', 'POST', `/v1/invites/${code}/accept`)).status, 404);
+    assert.equal((await call('gone', 'GET', `/v1/teams/${team}`)).status, 404, 'no membership granted');
+    assert.equal((await call('icoach', 'POST', `/v1/players/${pid}/invite`)).status, 409);
+  });
+
   test('a code works once, and linked players cannot be re-invited', async () => {
     const pid = await newPlayer('Sam');
     const code = await invite(pid);

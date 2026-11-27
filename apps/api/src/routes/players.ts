@@ -6,7 +6,7 @@ import { randomBytes } from 'node:crypto';
 import { idParam, json } from '../openapi.ts';
 import { db } from '../db/client.ts';
 import { gameEvents, playerInvites, players, teamMembers } from '../db/schema.ts';
-import { HttpError, requireRole } from '../auth.ts';
+import { HttpError, isStaff, requireRole } from '../auth.ts';
 
 const tags = ['players'];
 const teamParam = json(z.object({ teamId: z.uuid() }));
@@ -30,11 +30,12 @@ export async function playerRoutes(app: FastifyInstance) {
       },
     },
     async (req) => {
-      await requireRole(req, req.params.teamId, 'player');
+      const role = await requireRole(req, req.params.teamId, 'player');
       const where = req.query.includeInactive === 'true'
         ? eq(players.teamId, req.params.teamId)
         : and(eq(players.teamId, req.params.teamId), eq(players.active, true));
-      return db.select().from(players).where(where).orderBy(players.name);
+      const rows = await db.select().from(players).where(where).orderBy(players.name);
+      return isStaff(role) ? rows : rows.map((p) => ({ ...p, email: null }));
     },
   );
 
@@ -85,6 +86,7 @@ export async function playerRoutes(app: FastifyInstance) {
   }, async (req, reply) => {
     const p = await loadPlayer(req.params.id);
     await requireRole(req, p.teamId, 'coach');
+    if (!p.active) throw new HttpError(409, 'player is inactive');
     if (p.userId) throw new HttpError(409, 'player already has an account');
     const [i] = await db
       .insert(playerInvites)
@@ -109,6 +111,8 @@ export async function playerRoutes(app: FastifyInstance) {
         .returning();
       if (!claimed) throw new HttpError(404, 'invite not found, used or expired');
       const [p] = await tx.select().from(players).where(eq(players.id, claimed.playerId));
+      // A player deactivated after the invite went out: the old code must not get them back in.
+      if (!p!.active) throw new HttpError(404, 'invite not found, used or expired');
       if (p!.userId && p!.userId !== req.userId) throw new HttpError(409, 'player already linked to another account');
       const [mine] = await tx
         .select({ id: players.id })

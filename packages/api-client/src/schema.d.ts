@@ -253,7 +253,7 @@ export interface paths {
             'application/json': {
               /** Format: uuid */
               userId: string;
-              email: string;
+              email: string | null;
               name: string | null;
               /** @enum {string} */
               role: 'owner' | 'coach' | 'stat_keeper' | 'player';
@@ -303,7 +303,7 @@ export interface paths {
             'application/json': {
               /** Format: uuid */
               userId: string;
-              email: string;
+              email: string | null;
               name: string | null;
               /** @enum {string} */
               role: 'owner' | 'coach' | 'stat_keeper' | 'player';

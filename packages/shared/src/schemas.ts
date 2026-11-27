@@ -100,7 +100,8 @@ export const player = z.object({
   active: z.boolean(),
   createdAt: z.iso.datetime({ offset: true }),
 });
-export const member = z.object({ userId: id, email: z.string(), name: z.string().nullable(), role: memberRole });
+/** `email` is null unless the caller is a coach or owner. */
+export const member = z.object({ userId: id, email: z.string().nullable(), name: z.string().nullable(), role: memberRole });
 export const me = z.object({ id, email: z.string(), name: z.string().nullable() });
 export const invite = z.object({ code: z.string(), expiresAt: z.iso.datetime({ offset: true }) });
 export const inviteAccepted = z.object({ teamId: id, playerId: id });
