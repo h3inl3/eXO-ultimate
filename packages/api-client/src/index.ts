@@ -7,7 +7,11 @@ export type { paths, components } from './schema.d.ts';
  * Typed client for the eXO API. Regenerate types with `pnpm api:generate` after changing routes.
  * `getToken` is called before each request (mobile refreshes its access token there).
  */
-export function createApiClient(baseUrl: string, headers?: Record<string, string>, getToken?: () => Promise<string | null>) {
+export function createApiClient(
+  baseUrl: string,
+  headers?: Record<string, string>,
+  getToken?: () => Promise<string | null>,
+) {
   const client = createClient<paths>({ baseUrl, headers });
   if (getToken) {
     client.use({
