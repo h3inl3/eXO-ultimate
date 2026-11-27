@@ -1,6 +1,8 @@
 import { HERO_ORANGE, ON_ORANGE, SAMPLE } from '@exo/shared';
+import { session } from '../lib/session';
+import { NewTeam } from './new-team';
 
-// Team home (docs/design/WebDashboard.dc.html). Shows SAMPLE data until sign-in exists.
+// Team home (docs/design/WebDashboard.dc.html). Game data stays SAMPLE until seasons and games land (Phase 2-3).
 const CHIP = {
   live: { background: 'var(--orange)', color: ON_ORANGE },
   win: { background: 'var(--chipGreen)', color: 'var(--text)' },
@@ -15,7 +17,10 @@ const btn = {
   font: '600 15px var(--font-ui), sans-serif',
 };
 
-export default function Home() {
+export default async function Home() {
+  const s = await session();
+  if (!s) return <SignedOut />;
+  if (!s.team) return <NewTeam first />;
   const { live, schedule, leaders } = SAMPLE;
   return (
     <div
@@ -41,20 +46,24 @@ export default function Home() {
             Spring League · Week 4
           </p>
           <h1 style={{ margin: '4px 0 0', fontSize: 36, fontWeight: 700, letterSpacing: -0.5 }}>
-            Team home
+            {s.team.name}
           </h1>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          <button
+          <a
+            href="/roster"
             style={{
               ...btn,
+              display: 'flex',
+              alignItems: 'center',
               border: '1.5px solid var(--line)',
               background: 'var(--surface)',
               color: 'var(--text)',
+              textDecoration: 'none',
             }}
           >
-            Add player
-          </button>
+            Roster
+          </a>
           <button
             style={{
               ...btn,
@@ -94,7 +103,7 @@ export default function Home() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-            <Score name={SAMPLE.team.name} value={live.us} />
+            <Score name={s.team.name} value={live.us} />
             <div style={{ fontSize: 14, textAlign: 'center' }}>
               Pt {live.point}
               <br />
@@ -240,6 +249,23 @@ function Score({ name, value }: { name: string; value: number }) {
       <div className="num" style={{ fontSize: 64, fontWeight: 700, lineHeight: 1 }}>
         {value}
       </div>
+    </div>
+  );
+}
+
+function SignedOut() {
+  return (
+    <div style={{ maxWidth: 560, margin: '10vh auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <h1 style={{ margin: 0, fontSize: 36 }}>Run your ultimate team</h1>
+      <p style={{ margin: 0, color: 'var(--muted)', fontSize: 17 }}>
+        Rosters, seasons, live stats and a playbook, for coaches and players.
+      </p>
+      <a
+        href="/auth/login"
+        style={{ ...btn, alignSelf: 'start', display: 'flex', alignItems: 'center', background: 'var(--orange)', color: ON_ORANGE, fontWeight: 700, textDecoration: 'none' }}
+      >
+        Sign in or create an account
+      </a>
     </div>
   );
 }

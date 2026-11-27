@@ -109,6 +109,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@exo/api-client':
+        specifier: workspace:^
+        version: link:../../packages/api-client
       '@exo/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -121,6 +124,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.3.1(react@19.3.1)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
