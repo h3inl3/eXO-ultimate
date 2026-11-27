@@ -1,19 +1,33 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link, type Href } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { Pressable, ScrollView, Text, View, type TextStyle } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View, type TextStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HERO_ORANGE, ON_ORANGE, SAMPLE, resultChip } from '@exo/shared';
 import { useTheme } from '../../src/theme';
+import { useSession } from '../../src/session';
 
 type Icon = ComponentProps<typeof Ionicons>['name'];
 const display: TextStyle = { fontWeight: '700', fontVariant: ['tabular-nums'] };
 
-// Team home (docs/design/MobileHome.dc.html). Shows SAMPLE data until sign-in exists.
+// Team home (docs/design/MobileHome.dc.html). Game data stays SAMPLE until seasons and games land (Phase 2-3).
 export default function Home() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { team, live, schedule } = SAMPLE;
+  const { team, teams, me, setTeam, signOut } = useSession();
+  const { live, schedule } = SAMPLE;
+  const role = { owner: 'Owner', coach: 'Coach', stat_keeper: 'Stat keeper', player: 'Player' }[team!.role];
+  const division = team!.division[0]!.toUpperCase() + team!.division.slice(1);
+  const switchTeam = () =>
+    Alert.alert('Switch team', undefined, [
+      ...teams.map((x) => ({ text: x.id === team!.id ? `✓ ${x.name}` : x.name, onPress: () => setTeam(x.id) })),
+      { text: 'Cancel', style: 'cancel' as const },
+    ]);
+  const account = () =>
+    Alert.alert(me!.name ?? me!.email, me!.email, [
+      { text: 'Sign out', style: 'destructive', onPress: signOut },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   const actions: Array<[string, Icon, string, string, Href]> = [
     ['Add player', 'person-add-outline', t.chipBlue, t.link, '/roster'],
     ['New game', 'disc-outline', t.orange, ON_ORANGE, '/score'],
@@ -31,6 +45,7 @@ export default function Home() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Switch team"
+          onPress={switchTeam}
           style={{
             ...card,
             flex: 1,
@@ -56,14 +71,15 @@ export default function Home() {
             <Text style={{ color: t.onBlue, fontWeight: '700', fontSize: 13 }}>eXO</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: t.text, fontWeight: '700', fontSize: 16 }}>{team.name}</Text>
-            <Text style={{ color: t.muted, fontSize: 12 }}>{team.meta}</Text>
+            <Text style={{ color: t.text, fontWeight: '700', fontSize: 16 }}>{team!.name}</Text>
+            <Text style={{ color: t.muted, fontSize: 12 }}>{division} · {role}</Text>
           </View>
           <Ionicons name="chevron-down" size={20} color={t.text} />
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Notifications"
+          accessibilityLabel="Account"
+          onPress={account}
           style={{
             ...card,
             width: 48,
@@ -73,18 +89,7 @@ export default function Home() {
             justifyContent: 'center',
           }}
         >
-          <Ionicons name="notifications-outline" size={22} color={t.text} />
-          <View
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 11,
-              width: 9,
-              height: 9,
-              borderRadius: 5,
-              backgroundColor: t.orange,
-            }}
-          />
+          <Ionicons name="person-circle-outline" size={24} color={t.text} />
         </Pressable>
       </View>
 
