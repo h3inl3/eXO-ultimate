@@ -34,8 +34,10 @@ type Profile = { email: string; name?: string };
 async function cognitoProfile(token: string, sub: string): Promise<Profile> {
   const res = await fetch(`${process.env.COGNITO_DOMAIN}/oauth2/userInfo`, { headers: { authorization: `Bearer ${token}` } });
   if (!res.ok) throw new HttpError(401, 'userinfo failed');
-  const u = (await res.json()) as { sub: string; email?: string; name?: string };
+  const u = (await res.json()) as { sub: string; email?: string; email_verified?: boolean | string; name?: string };
   if (u.sub !== sub || !u.email) throw new HttpError(401, 'userinfo: no email (request the openid and email scopes)');
+  // Staff are added by email, so an unverified address would let someone take another person's place.
+  if (String(u.email_verified) !== 'true') throw new HttpError(401, 'email not verified');
   return { email: u.email, name: u.name };
 }
 
@@ -53,6 +55,9 @@ async function userIdFor(subject: string, profile: () => Promise<Profile>): Prom
 export function registerAuth(app: FastifyInstance) {
   const devAuth = process.env.DEV_AUTH === 'true';
   if (devAuth && process.env.NODE_ENV === 'production') throw new Error('DEV_AUTH must not be enabled in production');
+  if (cognito && !(process.env.COGNITO_DOMAIN && process.env.COGNITO_CLIENT_IDS)) {
+    throw new Error('COGNITO_USER_POOL_ID needs COGNITO_DOMAIN and COGNITO_CLIENT_IDS');
+  }
   app.decorateRequest('userId', '');
   app.addHook('onRequest', async (req) => {
     if (PUBLIC.test(req.url)) return;

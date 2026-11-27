@@ -1,5 +1,5 @@
 // Integration tests against the real Postgres in DATABASE_URL (`pnpm db:up` locally, a service in CI).
-import { after, before, describe, test } from 'node:test';
+import { after, before, describe, mock, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSign, generateKeyPairSync, randomUUID } from 'node:crypto';
 
@@ -7,6 +7,7 @@ const POOL = 'us-east-2_TestPool';
 process.env.DEV_AUTH = 'true';
 process.env.COGNITO_USER_POOL_ID = POOL;
 process.env.COGNITO_CLIENT_IDS = 'web-client,mobile-client';
+process.env.COGNITO_DOMAIN = 'https://auth.example.test';
 
 const { buildApp } = await import('./app.ts');
 const { cognito } = await import('./auth.ts');
@@ -168,5 +169,26 @@ describe('cognito tokens', () => {
     assert.equal((await get(token({ ...claims, client_id: 'someone-else' }))).statusCode, 401);
     assert.equal((await get(token({ ...claims, exp: now - 10 }))).statusCode, 401);
     assert.equal((await get('not.a.jwt')).statusCode, 401);
+  });
+
+  test('first sight fetches the profile and requires a verified email', async () => {
+    const userInfo = (body: object) =>
+      mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify(body), { status: 200 }));
+    const fresh = () => ({ ...claims, sub: randomUUID() });
+
+    const c1 = fresh();
+    userInfo({ sub: c1.sub, email: `${c1.sub}@example.com`, email_verified: 'true' });
+    const ok = await get(token(c1));
+    assert.equal(ok.statusCode, 200);
+    assert.equal(ok.json().email, `${c1.sub}@example.com`);
+
+    const c2 = fresh();
+    userInfo({ sub: c2.sub, email: 'victim@example.com', email_verified: false });
+    assert.equal((await get(token(c2))).statusCode, 401);
+
+    const c3 = fresh();
+    userInfo({ sub: randomUUID(), email: 'x@example.com', email_verified: true });
+    assert.equal((await get(token(c3))).statusCode, 401, 'userInfo for a different subject');
+    mock.restoreAll();
   });
 });

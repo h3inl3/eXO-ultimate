@@ -197,6 +197,8 @@ Resources:
       DeletionProtection: ACTIVE
       UsernameAttributes: [email]       # fixed at creation
       AutoVerifiedAttributes: [email]
+      # A changed email only takes effect once verified (the API trusts verified emails only).
+      UserAttributeUpdateSettings: { AttributesRequireVerificationBeforeUpdate: [email] }
       UsernameConfiguration: { CaseSensitive: false }
       AccountRecoverySetting:
         RecoveryMechanisms: [{ Name: verified_email, Priority: 1 }]
