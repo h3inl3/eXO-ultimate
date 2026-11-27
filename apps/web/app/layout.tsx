@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { Inter, Space_Grotesk } from 'next/font/google';
-import { NAV, SAMPLE, THEMES, type Theme } from '@exo/shared';
+import { NAV, THEMES, type Theme } from '@exo/shared';
+import { session } from '../lib/session';
+import { NavLink, TeamSwitcher } from './ui';
+import { btn } from './styles';
 
 export const metadata = {
   title: 'eXO Ultimate',
@@ -36,7 +39,11 @@ const ICONS: Record<(typeof NAV)[number], string> = {
   Stats: 'M5 20V10M12 20V4M19 20v-7',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+// shortcut: Games, Playbook and Stats pages don't exist yet; add them here as they land.
+const HREF: Partial<Record<(typeof NAV)[number], string>> = { Home: '/', Roster: '/roster' };
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const s = await session();
   return (
     <html lang="en" className={`${inter.variable} ${grotesk.variable}`}>
       <head>
@@ -79,58 +86,32 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 eXO Ultimate
               </span>
             </div>
-            <button
-              aria-label="Switch team"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                minHeight: 52,
-                padding: '8px 12px',
-                borderRadius: 14,
-                border: '1px solid var(--line)',
-                background: 'var(--bg)',
-                color: 'var(--text)',
-                font: 'inherit',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ flex: 1 }}>
-                <span style={{ display: 'block', fontWeight: 700 }}>{SAMPLE.team.name}</span>
-                <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>
-                  {SAMPLE.team.meta}
-                </span>
-              </span>
-              <Icon d="M6 9l6 6 6-6" size={18} />
-            </button>
+            {s?.team ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <TeamSwitcher teams={s.teams} current={s.team.id} />
+                <a href="/teams/new" style={{ fontSize: 14, fontWeight: 600, padding: '0 4px' }}>+ New team</a>
+              </div>
+            ) : null}
             <nav aria-label="Main" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {NAV.map((label) => {
-                // shortcut: only Home exists, so it is always the current page; use usePathname once other pages land.
-                const current = label === 'Home';
-                return (
-                  <a
-                    key={label}
-                    href={current ? '/' : '#'}
-                    aria-current={current ? 'page' : undefined}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      minHeight: 44,
-                      padding: '0 12px',
-                      borderRadius: 12,
-                      background: current ? 'var(--chipBlue)' : 'transparent',
-                      color: current ? 'var(--text)' : 'var(--muted)',
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <Icon d={ICONS[label]} size={22} />
-                    {label}
-                  </a>
-                );
-              })}
+              {NAV.map((label) => (
+                <NavLink key={label} href={HREF[label] ?? '#'}>
+                  <Icon d={ICONS[label]} size={22} />
+                  {label}
+                </NavLink>
+              ))}
             </nav>
+            <div style={{ marginTop: 'auto', padding: '0 8px', fontSize: 14, color: 'var(--muted)' }}>
+              {s ? (
+                <form action="/auth/logout" method="post" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <span>{s.me.name ?? s.me.email}</span>
+                  <button style={btn}>Sign out</button>
+                </form>
+              ) : (
+                <a href="/auth/login" style={{ ...btn, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                  Sign in
+                </a>
+              )}
+            </div>
           </aside>
           <main
             style={{
