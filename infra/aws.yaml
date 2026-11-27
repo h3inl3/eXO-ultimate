@@ -19,6 +19,16 @@ Parameters:
     Default: ''
     Description: S3 version id of that zip (a new upload under the same key needs a new version id)
 
+  WebCallbackUrls:
+    Type: CommaDelimitedList
+    Default: https://main.d14a3j7ogm6gq.amplifyapp.com/auth/callback,http://localhost:3000/auth/callback
+  WebLogoutUrls:
+    Type: CommaDelimitedList
+    Default: https://main.d14a3j7ogm6gq.amplifyapp.com/,http://localhost:3000/
+  MobileCallbackUrls:
+    Type: CommaDelimitedList
+    Default: exoultimate://auth/callback
+
 Conditions:
   HasCode: !Not [!Equals [!Ref ApiCodeKey, '']]
 
@@ -176,6 +186,89 @@ Resources:
       AutoMinorVersionUpgrade: true
       CopyTagsToSnapshot: true
 
+  # ---------- Auth (Cognito) ----------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: exo-users
+      UserPoolTier: ESSENTIALS          # managed login v2; free up to 10k MAU
+      DeletionProtection: ACTIVE
+      UsernameAttributes: [email]       # fixed at creation
+      AutoVerifiedAttributes: [email]
+      UsernameConfiguration: { CaseSensitive: false }
+      AccountRecoverySetting:
+        RecoveryMechanisms: [{ Name: verified_email, Priority: 1 }]
+      MfaConfiguration: OPTIONAL        # users may add an authenticator app; not forced
+      EnabledMfas: [SOFTWARE_TOKEN_MFA]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: false
+          RequireSymbols: false
+      Schema:
+        - { Name: email, AttributeDataType: String, Required: true, Mutable: true }
+        - { Name: name, AttributeDataType: String, Required: false, Mutable: true }
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Sub exo-${AWS::AccountId}
+      ManagedLoginVersion: 2
+
+  # Public clients: no secret (a browser/phone can't keep one), auth code + PKCE only.
+  WebClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: web
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email, profile]   # the API reads email via /oauth2/userInfo
+      SupportedIdentityProviders: [COGNITO]
+      CallbackURLs: !Ref WebCallbackUrls
+      LogoutURLs: !Ref WebLogoutUrls
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 30
+      TokenValidityUnits: { AccessToken: minutes, IdToken: minutes, RefreshToken: days }
+
+  MobileClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: mobile
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email, profile]
+      SupportedIdentityProviders: [COGNITO]
+      CallbackURLs: !Ref MobileCallbackUrls
+      LogoutURLs: !Ref MobileCallbackUrls
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 90
+      TokenValidityUnits: { AccessToken: minutes, IdToken: minutes, RefreshToken: days }
+
+  WebLoginBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties: { UserPoolId: !Ref UserPool, ClientId: !Ref WebClient, UseCognitoProvidedValues: true }
+
+  MobileLoginBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties: { UserPoolId: !Ref UserPool, ClientId: !Ref MobileClient, UseCognitoProvidedValues: true }
+
   # ---------- API ----------
   ApiRole:
     Type: AWS::IAM::Role
@@ -228,6 +321,9 @@ Resources:
           DB_SECRET_ARN: !GetAtt Database.MasterUserSecret.SecretArn
           MIGRATE_ON_START: 'true'
           MIGRATIONS_DIR: /var/task/drizzle
+          COGNITO_USER_POOL_ID: !Ref UserPool
+          COGNITO_CLIENT_IDS: !Sub ${WebClient},${MobileClient}
+          COGNITO_DOMAIN: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
 
   ApiEndpoint:
     Type: AWS::Lambda::WebFunctionEndpoint
@@ -251,6 +347,14 @@ Outputs:
     Value: !GetAtt Database.Endpoint.Address
   DatabaseSecretArn:
     Value: !GetAtt Database.MasterUserSecret.SecretArn
+  UserPoolId:
+    Value: !Ref UserPool
+  WebClientId:
+    Value: !Ref WebClient
+  MobileClientId:
+    Value: !Ref MobileClient
+  AuthDomain:
+    Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
   ApiUrl:
     Condition: HasCode
     Value: !Sub https://${ApiEndpoint.DomainName}

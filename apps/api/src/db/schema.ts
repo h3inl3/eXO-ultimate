@@ -53,7 +53,11 @@ export const players = pgTable(
     active: boolean('active').notNull().default(true),
     createdAt: created(),
   },
-  (t) => [index('players_team_idx').on(t.teamId)],
+  (t) => [
+    index('players_team_idx').on(t.teamId),
+    // One roster spot per user per team (NULL user_ids don't collide).
+    uniqueIndex('players_team_user_uq').on(t.teamId, t.userId),
+  ],
 );
 
 export const playerInvites = pgTable('player_invites', {
