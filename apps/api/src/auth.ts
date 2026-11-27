@@ -32,7 +32,10 @@ type Profile = { email: string; name?: string };
 
 /** Access tokens carry no email, so fetch it once, when we first see a user. */
 async function cognitoProfile(token: string, sub: string): Promise<Profile> {
-  const res = await fetch(`${process.env.COGNITO_DOMAIN}/oauth2/userInfo`, { headers: { authorization: `Bearer ${token}` } });
+  const res = await fetch(`${process.env.COGNITO_DOMAIN}/oauth2/userInfo`, {
+    headers: { authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(5000),
+  });
   if (!res.ok) throw new HttpError(401, 'userinfo failed');
   const u = (await res.json()) as { sub: string; email?: string; email_verified?: boolean | string; name?: string };
   if (u.sub !== sub || !u.email) throw new HttpError(401, 'userinfo: no email (request the openid and email scopes)');

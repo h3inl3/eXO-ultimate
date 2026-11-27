@@ -740,7 +740,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/v1/invites/{code}/accept': {
+  '/v1/invites/accept': {
     parameters: {
       query?: never;
       header?: never;
@@ -753,12 +753,16 @@ export interface paths {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          code: string;
-        };
+        path?: never;
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody: {
+        content: {
+          'application/json': {
+            code: string;
+          };
+        };
+      };
       responses: {
         /** @description Default Response */
         200: {

@@ -99,7 +99,7 @@ describe('player invites', () => {
   test('accepting links the roster spot and grants read-only membership', async () => {
     const pid = await newPlayer('Jo');
     const code = await invite(pid);
-    const acc = await call('jo', 'POST', `/v1/invites/${code}/accept`);
+    const acc = await call('jo', 'POST', '/v1/invites/accept', { code: code });
     assert.equal(acc.status, 200);
     assert.deepEqual(acc.body, { teamId: team, playerId: pid });
     assert.equal((await call('jo', 'GET', `/v1/teams/${team}`)).body.role, 'player');
@@ -122,7 +122,7 @@ describe('player invites', () => {
     const pid = await newPlayer('Gone');
     const code = await invite(pid);
     await call('icoach', 'PATCH', `/v1/players/${pid}`, { active: false });
-    assert.equal((await call('gone', 'POST', `/v1/invites/${code}/accept`)).status, 404);
+    assert.equal((await call('gone', 'POST', '/v1/invites/accept', { code: code })).status, 404);
     assert.equal((await call('gone', 'GET', `/v1/teams/${team}`)).status, 404, 'no membership granted');
     assert.equal((await call('icoach', 'POST', `/v1/players/${pid}/invite`)).status, 409);
   });
@@ -130,25 +130,25 @@ describe('player invites', () => {
   test('a code works once, and linked players cannot be re-invited', async () => {
     const pid = await newPlayer('Sam');
     const code = await invite(pid);
-    const results = await Promise.all([call('sam', 'POST', `/v1/invites/${code}/accept`), call('eve', 'POST', `/v1/invites/${code}/accept`)]);
+    const results = await Promise.all([call('sam', 'POST', '/v1/invites/accept', { code: code }), call('eve', 'POST', '/v1/invites/accept', { code: code })]);
     assert.deepEqual(results.map((r) => r.status).sort(), [200, 404]);
     assert.equal((await call('icoach', 'POST', `/v1/players/${pid}/invite`)).status, 409);
   });
 
   test('one roster spot per user per team', async () => {
     const code = await invite(await newPlayer('Kai'));
-    assert.equal((await call('jo', 'POST', `/v1/invites/${code}/accept`)).status, 409);
+    assert.equal((await call('jo', 'POST', '/v1/invites/accept', { code: code })).status, 409);
   });
 
   test('staff claiming a player spot keep their role', async () => {
     const code = await invite(await newPlayer('Coach Mei'));
-    assert.equal((await call('icoach', 'POST', `/v1/invites/${code}/accept`)).status, 200);
+    assert.equal((await call('icoach', 'POST', '/v1/invites/accept', { code: code })).status, 200);
     assert.equal((await call('icoach', 'GET', `/v1/teams/${team}`)).body.role, 'owner');
   });
 
   test('removing a member unlinks their roster spot', async () => {
     const pid = await newPlayer('Ria');
-    await call('ria', 'POST', `/v1/invites/${await invite(pid)}/accept`);
+    await call('ria', 'POST', '/v1/invites/accept', { code: await invite(pid) });
     assert.equal((await call('icoach', 'DELETE', `/v1/teams/${team}/members/${await meId('ria')}`)).status, 204);
     const roster = await call('icoach', 'GET', `/v1/teams/${team}/players`);
     assert.equal(roster.body.find((p: { id: string }) => p.id === pid).userId, null);
