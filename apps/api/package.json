@@ -10,13 +10,15 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "openapi": "tsx src/export-openapi.ts"
+    "openapi": "tsx src/export-openapi.ts",
+    "test": "node --env-file-if-exists=.env --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1178.0",
     "@exo/shared": "workspace:*",
     "@fastify/swagger": "^9.9.5",
     "@fastify/swagger-ui": "^6.1.5",
+    "aws-jwt-verify": "^5.2.1",
     "drizzle-orm": "^0.44.0",
     "fastify": "^5.0.0",
     "postgres": "^3.4.0",

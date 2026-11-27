@@ -22,9 +22,12 @@ export function registerOpenApi(app: FastifyInstance) {
       openapi: '3.1.0',
       info: { title: 'eXO Ultimate API', version: '1' },
       components: {
-        securitySchemes: { devUser: { type: 'apiKey', in: 'header', name: 'x-dev-user' } },
+        securitySchemes: {
+          cognito: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Cognito access token' },
+          devUser: { type: 'apiKey', in: 'header', name: 'x-dev-user', description: 'Local dev only (DEV_AUTH=true)' },
+        },
       },
-      security: [{ devUser: [] }],
+      security: [{ cognito: [] }, { devUser: [] }],
     },
   });
   app.register(swaggerUi, { routePrefix: '/docs' });

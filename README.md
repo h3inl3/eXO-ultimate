@@ -32,7 +32,7 @@ pnpm dev                                      # api :4000, web :3000, Expo dev s
 
 API docs are served at http://localhost:4000/docs. After changing a route, run `pnpm api:generate` to refresh `packages/api-client` (CI fails if it is stale, and likewise for migrations after a schema change).
 
-Dev auth is a stub. Send `x-dev-user: <user uuid>` on API requests until OIDC lands in Phase 1.
+Auth is Amazon Cognito: the API accepts Cognito access tokens (`Authorization: Bearer …`) and creates a user row on first sight. Locally, with `DEV_AUTH=true`, send `x-dev-user: <any name>` instead to act as that user. API integration tests (`pnpm --filter @exo/api test`) need `pnpm db:up`.
 
 ## Deploy
 
@@ -40,7 +40,7 @@ Everything runs in one AWS project in **us-east-2** (CLI profile `exo-ultimate`)
 
 | App | Where | How |
 |-----|-------|-----|
-| API + DB | Lambda Web Function + private RDS Postgres 17, stack `exo` from [infra/aws.yaml](infra/aws.yaml) | `apps/api/scripts/package-lambda.sh`, upload `apps/api/dist/function.zip` to the stack's `CodeBucket`, then update the stack with `ApiCodeKey` / `ApiCodeVersion` (the new S3 version id). Migrations run on startup under an advisory lock. The DB password lives in the RDS-managed secret |
+| API + DB + Auth | Lambda Web Function + private RDS Postgres 17 + Cognito user pool, stack `exo` from [infra/aws.yaml](infra/aws.yaml) | `apps/api/scripts/package-lambda.sh`, upload `apps/api/dist/function.zip` to the stack's `CodeBucket`, then update the stack with `ApiCodeKey` / `ApiCodeVersion` (the new S3 version id). Migrations run on startup under an advisory lock. The DB password lives in the RDS-managed secret |
 | Web | Amplify Hosting, built from [amplify.yml](amplify.yml) | Connected to GitHub in the Amplify console with app root `apps/web`; set `NEXT_PUBLIC_API_URL` |
 | Mobile | EAS | `cd apps/mobile && eas init && eas build --profile preview` |
 

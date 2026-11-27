@@ -8,6 +8,13 @@
       "when": 1795705260684,
       "tag": "0000_heavy_siren",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795788478786,
+      "tag": "0001_volatile_korath",
+      "breakpoints": true
     }
   ]
 }

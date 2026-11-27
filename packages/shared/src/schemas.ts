@@ -10,7 +10,12 @@ export const teamCreate = z.object({
 });
 export type TeamCreate = z.infer<typeof teamCreate>;
 
+export const teamUpdate = teamCreate.partial();
+
 export const memberRole = z.enum(ROLES);
+/** Adds a user who has already signed in at least once. */
+export const memberAdd = z.object({ email: z.email(), role: memberRole });
+export const memberUpdate = z.object({ role: memberRole });
 
 export const playerCreate = z.object({
   name: z.string().trim().min(1).max(80),
@@ -95,4 +100,9 @@ export const player = z.object({
   active: z.boolean(),
   createdAt: z.iso.datetime({ offset: true }),
 });
+/** `email` is null unless the caller is a coach or owner. */
+export const member = z.object({ userId: id, email: z.string().nullable(), name: z.string().nullable(), role: memberRole });
+export const me = z.object({ id, email: z.string(), name: z.string().nullable() });
+export const invite = z.object({ code: z.string(), expiresAt: z.iso.datetime({ offset: true }) });
+export const inviteAccepted = z.object({ teamId: id, playerId: id });
 export const error = z.object({ error: z.string() });
