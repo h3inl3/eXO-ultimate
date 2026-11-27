@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { error, invite, inviteAccepted, player, playerCreate, playerUpdate } from '@exo/shared';
+import { error, invite, inviteAccept, inviteAccepted, player, playerCreate, playerUpdate } from '@exo/shared';
 import { randomBytes } from 'node:crypto';
 import { idParam, json } from '../openapi.ts';
 import { db } from '../db/client.ts';
@@ -96,18 +96,20 @@ export async function playerRoutes(app: FastifyInstance) {
   });
 
   // Links the signed-in user to the roster spot and makes them a team member.
-  app.post<{ Params: { code: string } }>('/v1/invites/:code/accept', {
+  // The code travels in the body, not the URL, so it never lands in request logs.
+  app.post<{ Body: { code: string } }>('/v1/invites/accept', {
     schema: {
-      tags, params: json(z.object({ code: z.string().min(1).max(64) })),
+      tags, body: json(inviteAccept),
       response: { 200: json(inviteAccepted, 'output'), 404: json(error), 409: json(error) },
     },
   }, async (req) => {
+    const { code } = inviteAccept.parse(req.body);
     return db.transaction(async (tx) => {
       // Conditional claim: of two concurrent accepts, only one gets a row back.
       const [claimed] = await tx
         .update(playerInvites)
         .set({ acceptedBy: req.userId })
-        .where(and(eq(playerInvites.code, req.params.code), isNull(playerInvites.acceptedBy), gt(playerInvites.expiresAt, new Date())))
+        .where(and(eq(playerInvites.code, code), isNull(playerInvites.acceptedBy), gt(playerInvites.expiresAt, new Date())))
         .returning();
       if (!claimed) throw new HttpError(404, 'invite not found, used or expired');
       const [p] = await tx.select().from(players).where(eq(players.id, claimed.playerId));
