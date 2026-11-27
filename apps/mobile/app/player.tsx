@@ -77,7 +77,7 @@ export default function PlayerScreen() {
 
   if (!ready) return error ? <View style={{ padding: 20 }}><Notice>{error}</Notice></View> : <Loading />;
   return (
-    <ScrollView style={{ backgroundColor: t.bg }} contentContainerStyle={{ padding: 20, gap: 16 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={{ backgroundColor: t.bg }} contentContainerStyle={{ padding: 20, gap: 16 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag">
       <Field label="Name" value={name} onChangeText={setName} maxLength={80} />
       <Field label="Jersey number" value={number} onChangeText={(v) => setNumber(v.replace(/\D/g, '').slice(0, 2))} keyboardType="number-pad" />
       {team!.division === 'mixed' && (

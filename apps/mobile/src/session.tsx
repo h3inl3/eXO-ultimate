@@ -95,7 +95,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [reload]);
 
   const signIn = useCallback(async () => {
-    const res = await promptAsync();
+    // Private browser session: no Cognito cookie outlives sign-out, so sign-out needs no browser trip.
+    const res = await promptAsync({ preferEphemeralSession: true });
     if (res.type !== 'success' || !request?.codeVerifier) return res.type === 'cancel' || res.type === 'dismiss' ? null : 'Sign-in failed.';
     try {
       const tokens = await AuthSession.exchangeCodeAsync(
@@ -121,11 +122,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setTeams([]);
     setTeamId(null);
     setStatus('signedOut');
-    // Also end Cognito's browser session, or the next sign-in would skip the password.
-    await WebBrowser.openAuthSessionAsync(
-      `${DOMAIN}/logout?${new URLSearchParams({ client_id: CLIENT_ID, logout_uri: redirectUri })}`,
-      redirectUri,
-    ).catch(() => {});
   }, []);
 
   const setTeam = useCallback((id: string) => {

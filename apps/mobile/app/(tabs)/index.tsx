@@ -24,7 +24,7 @@ export default function Home() {
       { text: 'Cancel', style: 'cancel' as const },
     ]);
   const account = () =>
-    Alert.alert(me!.name ?? me!.email, me!.email, [
+    Alert.alert(me!.name ?? 'Account', me!.email, [
       { text: 'Sign out', style: 'destructive', onPress: signOut },
       { text: 'Cancel', style: 'cancel' },
     ]);

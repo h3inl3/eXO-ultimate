@@ -30,7 +30,7 @@ export function Welcome() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: t.bg }} contentContainerStyle={{ padding: 24, paddingTop: insets.top + 48, gap: 16 }}>
+    <ScrollView style={{ backgroundColor: t.bg }} contentContainerStyle={{ padding: 24, paddingTop: insets.top + 48, gap: 16 }} automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
       <Text style={{ color: t.text, fontSize: 32, fontWeight: '700' }}>
         {status === 'signedIn' ? 'Create your first team' : 'Run your ultimate team'}
       </Text>

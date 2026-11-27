@@ -78,6 +78,9 @@ export default function Roster() {
       style={{ backgroundColor: t.bg }}
       contentContainerStyle={{ paddingTop: insets.top + 12, padding: 20, gap: 16 }}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+      automaticallyAdjustKeyboardInsets
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={{ color: t.text, fontSize: 28, fontWeight: '700' }}>Roster</Text>
